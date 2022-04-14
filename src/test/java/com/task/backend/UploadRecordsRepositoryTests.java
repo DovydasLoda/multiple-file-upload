@@ -2,7 +2,6 @@ package com.task.backend;
 
 import com.task.backend.entity.UploadRecord;
 import com.task.backend.repository.UploadRecordRepository;
-import com.task.backend.service.UploadRecordsService;
 import com.task.backend.utils.DateUtils;
 
 import org.junit.jupiter.api.Test;
