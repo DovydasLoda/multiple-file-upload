@@ -8,35 +8,36 @@ import com.task.backend.utils.DateUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DataJpaTest
-public class UploadRecordsRepositoryTests {
+@SpringBootTest
+public class UploadRecordsServiceTests {
     private final String oldIp = "192.168.1.100";
 
 	@Autowired
-	UploadRecordRepository repository;
+	UploadRecordsService service;
 
 	@Test
-    public void should_find_no_statistics_if_repository_is_empty() {
-        Iterable<UploadRecord> data = repository.findAll();
+    public void should_find_no_statistics() {
+        Iterable<UploadRecord> data = service.getAllRecords();
         assertThat(data).isEmpty();
     }
 
     @Test
-    public void should_store_and_find_a_statistic() {
-        UploadRecord record = new UploadRecord();
-        record.setIp(oldIp);
-        repository.save(record);
+    public void should_update_statistic() {
+        service.logUploadRecordUsage(oldIp);
+        assertThat(service.getAllRecords()).isNotEmpty();
 
-        assertThat(record).hasFieldOrPropertyWithValue("ip", oldIp);
-        assertThat(record).hasFieldOrPropertyWithValue("createdOn", DateUtils.getCurrentDate());
-        assertThat(record).hasFieldOrPropertyWithValue("usageCount", record.getUsageCount());
+        UploadRecord u = service.getAllRecords().get(0);
+        assertThat(u).isNotNull();
+        assertThat(u.getUsageCount()).isGreaterThan(0);
 
-        UploadRecord newRecord = repository.findByIpAndCreatedOn(oldIp, DateUtils.getCurrentDate());
-        assertThat(newRecord).hasFieldOrPropertyWithValue("ip", oldIp);
-        assertThat(newRecord).hasFieldOrPropertyWithValue("createdOn", DateUtils.getCurrentDate());
-        assertThat(newRecord).hasFieldOrPropertyWithValue("usageCount", newRecord.getUsageCount());
+        service.logUploadRecordUsage(oldIp);
+        u = service.getAllRecords().get(0);
+        assertThat(u.getUsageCount()).isEqualTo(2);
+
     }
 }
